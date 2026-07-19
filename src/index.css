@@ -1,0 +1,108 @@
+@import '@fontsource/bebas-neue';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
+@import '@fontsource/inter/900.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background-color: #141414;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Global Scrollbar (Netflix style) ── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #141414; }
+::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; border: 2px solid #141414; }
+::-webkit-scrollbar-thumb:hover { background: #737373; }
+
+/* ── Custom vertical scrollbar for lists ── */
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #555; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #737373; border: 2px solid transparent; background-clip: content-box; }
+
+/* ── Focus ── */
+:focus-visible { outline: 2px solid #E50914; outline-offset: 2px; }
+
+/* ── Hide scrollbar utility ── */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ── Netflix-style card hover ── */
+.netflix-card {
+  position: relative;
+  transition: transform 0.25s ease, z-index 0s 0.25s;
+  z-index: 1;
+}
+.netflix-card:hover {
+  transform: scale(1.06);
+  z-index: 20;
+  transition: transform 0.25s ease, z-index 0s 0s;
+}
+
+/* ── Smooth row overflow trick so hovered cards aren't clipped ── */
+.row-scroller {
+  overflow-x: auto;
+  padding-top: 24px;
+  margin-top: -24px;
+  padding-bottom: 24px;
+  margin-bottom: -24px;
+}
+
+/* ── Hero text shadow ── */
+.hero-title {
+  text-shadow: 2px 4px 20px rgba(0,0,0,0.8);
+}
+
+/* ── Netflix embed player ── */
+.netflix-player-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: #000;
+}
+.netflix-player-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── More Like This grid item hover ── */
+.rec-card {
+  transition: transform 0.2s ease;
+}
+.rec-card:hover {
+  transform: scale(1.04);
+  z-index: 10;
+  position: relative;
+}
+
+/* ── Netflix-style page loader (sliding red bar) ── */
+@keyframes nf-slide {
+  0%   { left: -35%; width: 35%; }
+  60%  { left: 100%; width: 35%; }
+  100% { left: 100%; width: 35%; }
+}
+
+.nf-loader-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 35%;
+  background: linear-gradient(to right, #E50914, #ff6060, #E50914);
+  animation: nf-slide 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  z-index: 9999;
+  border-radius: 0 2px 2px 0;
+}
+
+/* Removed unused .genre-pills and .season-tabs-scroll classes */
