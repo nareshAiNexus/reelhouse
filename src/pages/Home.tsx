@@ -57,6 +57,31 @@ export default function Home() {
     return () => clearInterval(t);
   }, [trending]);
 
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    if (distance > minSwipeDistance) {
+      // Swiped left -> next
+      setHeroIdx((i) => (i + 1) % Math.min(trending.length, 5));
+    } else if (distance < -minSwipeDistance) {
+      // Swiped right -> prev
+      setHeroIdx((i) => (i - 1 + Math.min(trending.length, 5)) % Math.min(trending.length, 5));
+    }
+  };
+
   if (loading) return <Loader label="Loading ReelHouse" />;
   if (error)
     return (
@@ -83,25 +108,33 @@ export default function Home() {
           HERO BILLBOARD  — exactly like Netflix
       ══════════════════════════════════════════ */}
       {hero && (
-        <section className="relative w-full" style={{ height: '75vh', minHeight: 460 }}>
+        <section 
+          className="relative w-full aspect-[3/4] max-h-[85vh] sm:max-h-none sm:aspect-auto sm:h-[75vh] sm:min-h-[460px] cursor-grab active:cursor-grabbing"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
 
-          {/* Backdrop image */}
-          <img
-            key={hero.id}
-            src={backdropUrl(hero.backdropPath, 'original')}
-            alt={hero.title}
-            className="absolute inset-0 w-full h-full object-cover select-none"
-            style={{ transition: 'opacity 0.8s ease' }}
-          />
+          {/* Picture element for mobile poster / desktop backdrop */}
+          <picture>
+            <source media="(max-width: 639px)" srcSet={backdropUrl(hero.posterPath, 'original')} />
+            <img
+              key={hero.id}
+              src={backdropUrl(hero.backdropPath, 'original')}
+              alt={hero.title}
+              className="absolute inset-0 w-full h-full object-cover select-none"
+              style={{ transition: 'opacity 0.8s ease' }}
+            />
+          </picture>
 
-          {/* 1. Vignette from left (black → transparent) */}
-          <div className="absolute inset-0"
+          {/* 1. Vignette from left (black → transparent) - Desktop only */}
+          <div className="absolute inset-0 hidden sm:block"
             style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, transparent 70%)' }}
           />
 
-          {/* 2. Bottom fade into void */}
+          {/* 2. Bottom fade into void (Stronger on mobile) */}
           <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, #141414 0%, #141414 6%, transparent 30%)' }}
+            style={{ background: 'linear-gradient(to top, #141414 0%, #141414 10%, rgba(0,0,0,0.4) 40%, transparent 100%)' }}
           />
 
           {/* 3. Top fade behind navbar */}
@@ -110,12 +143,11 @@ export default function Home() {
           />
 
           {/* ── Hero content ── */}
-          <div className="absolute inset-0 flex flex-col justify-end px-4 sm:px-10 lg:px-16"
-               style={{ paddingBottom: '8vh' }}>
-            <div style={{ maxWidth: 560 }}>
+          <div className="absolute inset-0 flex flex-col items-center justify-end px-4 pb-12 sm:items-start sm:px-10 lg:px-16 sm:pb-[8vh]">
+            <div className="w-full text-center sm:text-left" style={{ maxWidth: 560 }}>
 
-              {/* Trending label */}
-              <div className="flex items-center gap-2 mb-3">
+              {/* Trending label (Desktop only) */}
+              <div className="hidden sm:flex items-center gap-2 mb-3">
                 <span className="bg-netflix text-white text-[10px] font-black px-2 py-0.5 rounded-sm tracking-widest uppercase">
                   Trending
                 </span>
@@ -124,39 +156,50 @@ export default function Home() {
                 </span>
               </div>
 
-              {/* Movie title — extremely large like Netflix */}
+              {/* Movie title */}
               <h1
-                className="font-black text-white leading-none mb-4 select-none"
+                className="font-black text-white leading-tight mb-2 sm:mb-4 select-none"
                 style={{
-                  fontSize: 'clamp(2.2rem, 6vw, 4.5rem)',
-                  textShadow: '0 4px 24px rgba(0,0,0,0.7)',
+                  fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.8)',
                   letterSpacing: '-0.5px',
                 }}
               >
                 {hero.title}
               </h1>
 
-              {/* Meta chips */}
-              <div className="flex items-center flex-wrap gap-2 mb-3">
+              {/* Meta chips (Desktop only) */}
+              <div className="hidden sm:flex items-center flex-wrap gap-2 mb-3">
                 <span className="text-green-400 font-bold text-sm">{matchPct}% Match</span>
                 {heroYear && <span className="text-white/60 text-sm">{heroYear}</span>}
                 <span className="border border-white/30 text-white/60 text-xs px-1.5 py-0.5 rounded-sm">HD</span>
                 <span className="border border-white/30 text-white/60 text-xs px-1.5 py-0.5 rounded-sm">U/A 16+</span>
               </div>
 
-              {/* Description */}
-              <p className="text-white/85 text-sm sm:text-base leading-relaxed mb-6 line-clamp-3"
+              {/* Mobile Genres overlay */}
+              <div className="sm:hidden text-white/90 text-[11px] font-semibold mb-4 tracking-wide text-center">
+                Exciting • Blockbuster • Action
+              </div>
+
+              {/* Description (Desktop only) */}
+              <p className="hidden sm:block text-white/85 text-sm sm:text-base leading-relaxed mb-6 line-clamp-3"
                  style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
                 {hero.overview}
               </p>
 
               {/* CTA buttons */}
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-6 sm:gap-3 flex-row justify-center sm:justify-start items-center w-full">
+                {/* My List (Mobile) */}
+                <button className="sm:hidden flex flex-col items-center gap-1 text-white hover:text-white/80">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span className="text-[10px] font-medium">My List</span>
+                </button>
+
                 <Link
                   to={`/watch/${hero.id}`}
-                  className="flex items-center gap-2 bg-white text-black font-bold
-                             px-8 py-3 rounded-sm text-base
-                             hover:bg-white/85 active:scale-95
+                  className="flex items-center justify-center gap-2 bg-white text-black font-bold
+                             px-6 sm:px-8 py-2 sm:py-3 rounded-[4px] text-sm sm:text-base
+                             hover:bg-white/85 active:scale-95 flex-1 max-w-[140px] sm:max-w-none sm:flex-none
                              transition-all duration-150 shadow-lg shadow-black/40"
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
@@ -164,8 +207,16 @@ export default function Home() {
                   </svg>
                   Play
                 </Link>
+
+                {/* Info (Mobile) */}
+                <button className="sm:hidden flex flex-col items-center gap-1 text-white hover:text-white/80">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  <span className="text-[10px] font-medium">Info</span>
+                </button>
+
+                {/* More Info (Desktop) */}
                 <button
-                  className="flex items-center gap-2 text-white font-semibold
+                  className="hidden sm:flex items-center gap-2 text-white font-semibold
                              px-8 py-3 rounded-sm text-base
                              hover:bg-white/10 active:scale-95
                              transition-all duration-150
@@ -207,9 +258,9 @@ export default function Home() {
           <button
             onClick={() => setHeroIdx((i) => (i - 1 + Math.min(trending.length, 5)) % Math.min(trending.length, 5))}
             aria-label="Previous Hero"
-            className="absolute left-0 top-0 bottom-0 z-20 w-[5%] min-w-[40px] opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-r from-black/60 to-transparent flex items-center justify-center group/heroBtn"
+            className="absolute left-0 top-0 bottom-0 z-20 w-[8%] sm:w-[5%] min-w-[30px] opacity-30 sm:opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-r from-black/60 to-transparent flex items-center justify-center group/heroBtn"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-10 h-10 transform transition-transform group-hover/heroBtn:scale-125 group-hover/heroBtn:-translate-x-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-8 h-8 sm:w-10 sm:h-10 transform transition-transform group-hover/heroBtn:scale-125 group-hover/heroBtn:-translate-x-1">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -217,9 +268,9 @@ export default function Home() {
           <button
             onClick={() => setHeroIdx((i) => (i + 1) % Math.min(trending.length, 5))}
             aria-label="Next Hero"
-            className="absolute right-0 top-0 bottom-0 z-20 w-[5%] min-w-[40px] opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-l from-black/60 to-transparent flex items-center justify-center group/heroBtn"
+            className="absolute right-0 top-0 bottom-0 z-20 w-[8%] sm:w-[5%] min-w-[30px] opacity-30 sm:opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-l from-black/60 to-transparent flex items-center justify-center group/heroBtn"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-10 h-10 transform transition-transform group-hover/heroBtn:scale-125 group-hover/heroBtn:translate-x-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-8 h-8 sm:w-10 sm:h-10 transform transition-transform group-hover/heroBtn:scale-125 group-hover/heroBtn:translate-x-1">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -229,7 +280,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════
           CONTENT ROWS — start right after hero
       ══════════════════════════════════════════ */}
-      <div className="relative z-10 pb-20" style={{ marginTop: -100 }}>
+      <div className="relative z-10 pb-20 mt-4 sm:-mt-[100px]">
         <MovieRow title="Trending Now"       movies={trending}   showRanks />
         <MovieRow title="Goated (Top Rated)" movies={topRated}   showRanks />
         <MovieRow title="Now Playing"        movies={nowPlaying} />

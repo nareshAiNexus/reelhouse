@@ -20,7 +20,7 @@ export default function TvRow({ title, shows, viewAllHref, variant = 'landscape'
 
   if (!shows.length) return null;
 
-  const cardCls   = variant === 'portrait' ? 'w-[160px] sm:w-[200px] lg:w-[240px]' : 'w-[260px] sm:w-[320px] lg:w-[380px]';
+  const cardCls   = variant === 'portrait' ? 'w-[100px] sm:w-[200px] lg:w-[240px]' : 'w-[110px] sm:w-[320px] lg:w-[380px]';
   const scrollDelta = variant === 'portrait' ? 800 : 1200;
 
   return (

@@ -16,6 +16,7 @@ export default function Navbar() {
   const [searchOpen, setSearch]   = useState(false);
   const [scrolled, setScrolled]   = useState(false);
   const [suggestions, setSuggestions] = useState<Movie[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate  = useNavigate();
   const location  = useLocation();
 
@@ -32,6 +33,13 @@ export default function Navbar() {
       setSuggestions([]);
     }
   }, [query]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const closeMenu = () => setMobileMenuOpen(false);
+    document.addEventListener('click', closeMenu);
+    return () => document.removeEventListener('click', closeMenu);
+  }, []);
 
   const isHome = location.pathname === '/';
 
@@ -61,15 +69,18 @@ export default function Navbar() {
           : 'bg-gradient-to-b from-black/80 via-black/30 to-transparent'
       }`}
     >
-      <div className="mx-auto max-w-[1800px] px-4 sm:px-8 lg:px-14 h-16 flex items-center gap-6">
+      <div className="mx-auto max-w-[1800px] px-4 sm:px-8 lg:px-14 h-16 flex items-center justify-between gap-6">
 
-        {/* Logo */}
-        <Link to="/" className="text-netflix font-black text-2xl tracking-widest shrink-0 select-none">
+        {/* Logo (N for mobile, REELHOUSE for desktop) */}
+        <Link to="/" className="text-netflix font-black text-3xl tracking-widest shrink-0 select-none hidden md:block">
           REEL<span className="text-ink">HOUSE</span>
         </Link>
+        <Link to="/" className="text-netflix font-black text-3xl shrink-0 select-none md:hidden">
+          N
+        </Link>
 
-        {/* Primary nav */}
-        <nav className="hidden md:flex items-center gap-5 text-sm font-medium">
+        {/* Primary nav (Desktop) */}
+        <nav className="hidden md:flex items-center gap-5 text-sm font-medium mr-auto">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.to}
@@ -81,11 +92,13 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Right controls */}
-        <div className="ml-auto flex items-center gap-4">
+        {/* Mobile Secondary Nav has been removed as per user request */}
 
-          {/* Search */}
-          <form onSubmit={handleSubmit} className="flex items-center">
+        {/* Right controls */}
+        <div className="flex items-center gap-4">
+
+          {/* Search (Desktop only) */}
+          <form onSubmit={handleSubmit} className="hidden md:flex items-center">
               <div className="relative flex items-center justify-end">
                 <div 
                   onClick={() => !searchOpen && setSearch(true)}
@@ -150,18 +163,32 @@ export default function Navbar() {
 
           </form>
 
-          {/* Notification bell */}
-          <button className="text-faint hover:text-ink transition-colors p-1 hidden sm:block" aria-label="Notifications">
+          {/* Cast Icon (Mobile) */}
+          <button className="text-white hover:text-white/80 transition-colors p-1 md:hidden" aria-label="Cast">
+            <CastIcon />
+          </button>
+
+          {/* Notification bell (Desktop only) */}
+          <button className="text-faint hover:text-ink transition-colors p-1 hidden md:block" aria-label="Notifications">
             <BellIcon />
           </button>
 
           {/* Profile avatar */}
-          <div className="w-8 h-8 rounded bg-netflix flex items-center justify-center text-white text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity select-none">
-            R
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity select-none overflow-hidden">
+             <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" alt="Profile" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
     </header>
+  );
+}
+
+function CastIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"></path>
+      <line x1="2" y1="20" x2="2.01" y2="20"></line>
+    </svg>
   );
 }
 

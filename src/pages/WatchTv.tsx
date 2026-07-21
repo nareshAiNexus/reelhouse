@@ -55,20 +55,20 @@ export default function WatchTv() {
   const prevEp = seasonData?.episodes.find((e) => e.episodeNumber === episode - 1);
 
   return (
-    <div className="bg-void min-h-screen">
+    <div className="bg-void min-h-screen pt-16">
       {/* ── Player (sticky so content overlaps it on scroll) ── */}
-      <div className="sticky top-16 z-0" style={{ height: 'calc(100vh - 64px)' }}>
+      <div className="sticky top-16 z-20 w-full aspect-video sm:aspect-auto sm:h-[calc(100vh-64px)] bg-black shadow-xl">
         {tmdbId && <EmbedPlayer embedUrl={getTvEmbedUrl(tmdbId, season, episode)} title={show?.name} />}
       </div>
 
       {/* ── Episode info & Season List ── */}
       <div className="relative z-10 bg-void">
-        <div className="px-4 sm:px-8 lg:px-14 py-6 max-w-7xl mx-auto flex flex-col gap-10">
+        <div className="px-4 sm:px-8 lg:px-14 py-4 sm:py-6 max-w-7xl mx-auto flex flex-col gap-8 sm:gap-10">
           
           {/* Top Info Section */}
           <div className="max-w-4xl">
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-2 text-muted text-sm mb-3">
+            {/* Breadcrumb (Desktop mainly, or very small on mobile) */}
+            <div className="flex flex-wrap items-center gap-2 text-muted text-xs sm:text-sm mb-2 sm:mb-3">
               <Link to={`/tv/${tmdbId}`} className="hover:text-white transition-colors">
                 {show?.name}
               </Link>
@@ -78,25 +78,51 @@ export default function WatchTv() {
               <span className="text-white">Episode {episode}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">
+            <h1 className="text-xl sm:text-3xl font-black text-white mb-2 leading-tight">
               S{season}E{episode}{curEpisode?.name ? ` · ${curEpisode.name}` : ''}
             </h1>
 
-            <div className="flex items-center gap-3 text-sm mb-4">
-              {curEpisode?.runtime && (
-                <span className="text-muted">{curEpisode.runtime} min</span>
+            <div className="flex items-center flex-wrap gap-2 text-xs sm:text-sm font-semibold mb-4 text-[#8c8c8c]">
+              {curEpisode?.voteAverage && curEpisode.voteAverage > 0 && (
+                <span className="text-green-400">★ {curEpisode.voteAverage.toFixed(1)}</span>
               )}
               {curEpisode?.airDate && (
-                <span className="text-muted">{curEpisode.airDate}</span>
+                <span className="text-white/60">{curEpisode.airDate}</span>
               )}
-              {curEpisode?.voteAverage && curEpisode.voteAverage > 0 && (
-                <span className="text-green-400 font-semibold">★ {curEpisode.voteAverage.toFixed(1)}</span>
+              <span className="bg-white/10 text-white/70 px-1 rounded-sm text-[10px] sm:text-xs">U/A 16+</span>
+              {curEpisode?.runtime && (
+                <span className="text-white/60">{curEpisode.runtime}m</span>
               )}
+              <span className="border border-white/20 text-white/50 text-[10px] sm:text-xs px-1 rounded-sm">HD</span>
+            </div>
+
+            {/* Mobile Play / Download Buttons */}
+            <div className="flex flex-col gap-2.5 mb-4">
+              <button className="flex items-center justify-center gap-2 bg-white text-black font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base hover:bg-white/90 transition-colors w-full">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M8 5v14l11-7z"/></svg>
+                Play
+              </button>
+              <button className="flex items-center justify-center gap-2 bg-[#2b2b2b] text-white font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base hover:bg-[#333] transition-colors w-full">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Download
+              </button>
             </div>
 
             {curEpisode?.overview && (
-              <p className="text-white/80 text-sm leading-relaxed">{curEpisode.overview}</p>
+              <p className="text-white/85 text-sm sm:text-base leading-relaxed mb-4">{curEpisode.overview}</p>
             )}
+
+            {/* Mobile Actions: My List, Rate, Share */}
+            <div className="flex gap-8 mb-6 sm:mb-0">
+              {(['My List', 'Rate', 'Share'] as const).map((label, idx) => (
+                <button key={label} className="flex flex-col items-center gap-1.5 text-white/70 hover:text-white transition-colors">
+                  {idx === 0 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>}
+                  {idx === 1 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>}
+                  {idx === 2 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>}
+                  <span className="text-[10px] font-medium">{label}</span>
+                </button>
+              ))}
+            </div>
 
             {/* Prev / Next navigation */}
             <div className="flex gap-3 mt-5">
@@ -105,7 +131,7 @@ export default function WatchTv() {
                   onClick={() => goEpisode(season, prevEp.episodeNumber)}
                   className="flex items-center gap-2 bg-surface hover:bg-surface2 text-white text-xs font-semibold px-4 py-2 rounded-sm transition-colors border border-surface2"
                 >
-                  ← E{prevEp.episodeNumber}: {prevEp.name}
+                  ← E{prevEp.episodeNumber}
                 </button>
               )}
               {nextEp && (
@@ -113,7 +139,7 @@ export default function WatchTv() {
                   onClick={() => goEpisode(season, nextEp.episodeNumber)}
                   className="flex items-center gap-2 bg-white text-black text-xs font-bold px-4 py-2 rounded-sm hover:bg-white/85 transition-colors"
                 >
-                  Next: E{nextEp.episodeNumber} {nextEp.name} →
+                  Next: E{nextEp.episodeNumber} →
                 </button>
               )}
             </div>

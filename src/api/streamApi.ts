@@ -1,12 +1,13 @@
+
 /**
  * Embed URL builder for 111movies.net
- *
- * Accepts either a TMDB numeric ID or an IMDb ID (tt-prefixed string).
- *
- * Movie:  https://111movies.net/movie/{id}
- * TV:     https://111movies.net/tv/{id}/{season}/{episode}
- */
-const BASE = 'https://111movies.net';
+*
+* Accepts either a TMDB numeric ID or an IMDb ID (tt-prefixed string).
+*
+* Movie:  https://111movies.net/movie/{id}
+* TV:     https://111movies.net/tv/{id}/{season}/{episode}
+*/
+const BASE = (import.meta.env.VITE_STREAM_API_BASE_URL as string);
 
 export function getMovieEmbedUrl(id: string | number): string {
   return `${BASE}/movie/${id}`;

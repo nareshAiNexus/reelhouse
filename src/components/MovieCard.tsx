@@ -43,7 +43,7 @@ export default function MovieCard({ movie, variant = 'landscape', showTitle = fa
       {/* ── Image container ── */}
       <div
         className={`relative w-full overflow-hidden rounded-sm bg-surface ${
-          variant === 'portrait' ? 'aspect-[2/3]' : 'aspect-video'
+          variant === 'portrait' ? 'aspect-[2/3]' : 'aspect-[2/3] sm:aspect-video'
         }`}
       >
         {/* Backdrop / Poster image */}

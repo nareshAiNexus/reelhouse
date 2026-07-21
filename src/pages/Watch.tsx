@@ -44,16 +44,16 @@ export default function Watch() {
   const matchColor = matchPct >= 70 ? '#4ade80' : matchPct >= 50 ? '#facc15' : '#f87171';
 
   return (
-    <div style={{ background: '#141414', minHeight: '100vh' }}>
+    <div className="pt-16" style={{ background: '#141414', minHeight: '100vh' }}>
 
       {/* ── Player (sticky so content overlaps it on scroll) ── */}
-      <div className="sticky top-16 z-0" style={{ height: 'calc(100vh - 64px)' }}>
+      <div className="sticky top-16 z-20 w-full aspect-video sm:aspect-auto sm:h-[calc(100vh-64px)] bg-black shadow-xl">
         {status === 'error' ? (
           <div className="w-full h-full flex items-center justify-center bg-black">
             <div className="text-center px-4">
-              <p className="text-netflix font-black text-4xl mb-3">Reel Not Found</p>
-              <p className="text-muted text-sm mb-4">{errMsg}</p>
-              <Link to="/" className="text-sm text-white/40 hover:text-white transition-colors">← Back to Home</Link>
+              <p className="text-netflix font-black text-2xl sm:text-4xl mb-3">Reel Not Found</p>
+              <p className="text-muted text-xs sm:text-sm mb-4">{errMsg}</p>
+              <Link to="/" className="text-xs sm:text-sm text-white/40 hover:text-white transition-colors">← Back to Home</Link>
             </div>
           </div>
         ) : (
@@ -64,43 +64,56 @@ export default function Watch() {
       {/* ── Movie info & More Like This ── */}
       <div className="relative z-10 bg-void">
       {movie && status !== 'error' && (
-        <div className="px-4 sm:px-8 lg:px-14 py-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="px-4 sm:px-8 lg:px-14 py-4 sm:py-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
 
             {/* Left: title + description */}
             <div className="lg:col-span-2">
-              <div className="flex items-center flex-wrap gap-2 mb-3">
-                <span className="font-bold text-base" style={{ color: matchColor }}>{matchPct}% Match</span>
-                {year && <span className="border border-white/20 text-white/50 text-xs px-1.5 py-0.5 rounded-sm">{year}</span>}
-                {runtime && <span className="border border-white/20 text-white/50 text-xs px-1.5 py-0.5 rounded-sm">{runtime}</span>}
-                <span className="border border-white/20 text-white/50 text-xs px-1.5 py-0.5 rounded-sm">HD</span>
-                <span className="border border-white/20 text-white/50 text-xs px-1.5 py-0.5 rounded-sm">U/A 16+</span>
-              </div>
-
-              <h1 className="font-black text-white leading-tight mb-3" style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)' }}>
+              <h1 className="font-black text-white leading-tight mb-2 sm:mb-3" style={{ fontSize: 'clamp(1.5rem, 5vw, 3rem)' }}>
                 {movie.title}
               </h1>
 
-              <p className="text-white/75 text-sm sm:text-base leading-relaxed">{movie.overview}</p>
-            </div>
+              <div className="flex items-center flex-wrap gap-2 mb-4 text-xs sm:text-sm font-semibold">
+                <span style={{ color: matchColor }}>{matchPct}% Match</span>
+                {year && <span className="text-white/60">{year}</span>}
+                <span className="bg-white/10 text-white/70 px-1 rounded-sm text-[10px] sm:text-xs">U/A 16+</span>
+                {runtime && <span className="text-white/60">{runtime}</span>}
+                <span className="border border-white/20 text-white/50 text-[10px] sm:text-xs px-1 rounded-sm">HD</span>
+              </div>
 
-            {/* Right: details + action buttons */}
-            <div className="space-y-3 text-sm">
-              {genres.length > 0 && (
-                <div><span className="text-muted">Genres: </span><span className="text-white/75">{genres.join(', ')}</span></div>
-              )}
-              <div><span className="text-muted">Rating: </span><span className="text-white/75">★ {movie.voteAverage.toFixed(1)} / 10</span></div>
-              {runtime && <div><span className="text-muted">Runtime: </span><span className="text-white/75">{runtime}</span></div>}
+              {/* Mobile Play / Download Buttons */}
+              <div className="flex flex-col gap-2.5 mb-4">
+                <button className="flex items-center justify-center gap-2 bg-white text-black font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base hover:bg-white/90 transition-colors w-full">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M8 5v14l11-7z"/></svg>
+                  Play
+                </button>
+                <button className="flex items-center justify-center gap-2 bg-[#2b2b2b] text-white font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base hover:bg-[#333] transition-colors w-full">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Download
+                </button>
+              </div>
 
-              <div className="flex gap-2 pt-2 flex-wrap">
-                {(['My List', 'Rate', 'Share'] as const).map((label) => (
-                  <button key={label}
-                    className="flex items-center gap-1.5 text-white text-xs font-semibold px-4 py-2 rounded-sm transition-colors border border-white/10 hover:bg-white/10"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    {label}
+              <p className="text-white/85 text-sm sm:text-base leading-relaxed mb-4">{movie.overview}</p>
+
+              {/* Mobile Actions: My List, Rate, Share */}
+              <div className="flex gap-8 mb-6 sm:mb-0">
+                {(['My List', 'Rate', 'Share'] as const).map((label, idx) => (
+                  <button key={label} className="flex flex-col items-center gap-1.5 text-white/70 hover:text-white transition-colors">
+                    {idx === 0 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>}
+                    {idx === 1 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>}
+                    {idx === 2 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>}
+                    <span className="text-[10px] font-medium">{label}</span>
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Right: details */}
+            <div className="space-y-2 text-xs sm:text-sm">
+              {genres.length > 0 && (
+                <div><span className="text-[#8c8c8c]">Genres: </span><span className="text-white/85">{genres.join(', ')}</span></div>
+              )}
+              <div><span className="text-[#8c8c8c]">Rating: </span><span className="text-white/85">★ {movie.voteAverage.toFixed(1)} / 10</span></div>
             </div>
           </div>
         </div>

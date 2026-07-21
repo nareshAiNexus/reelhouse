@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Navbar    from './components/Navbar';
+import BottomNav from './components/BottomNav';
 import Home      from './pages/Home';
 import Search    from './pages/Search';
 import GenrePage from './pages/GenrePage';
@@ -15,7 +16,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-void text-ink">
       <Navbar />
-      <main>
+      <main className="pb-16">
         <Routes>
           {/* Movies */}
           <Route path="/"               element={<Home />} />
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/genre-anime/:genreId" element={<GenrePageAnime />} />
         </Routes>
       </main>
+      <BottomNav />
     </div>
   );
 }
