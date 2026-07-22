@@ -8,7 +8,7 @@ export default function BottomNav() {
     { label: 'Series', to: '/tv-shows', icon: SeriesIcon },
     { label: 'Movies', to: '/', icon: MoviesIcon },
     { label: 'Search', to: '/search', icon: SearchNavIcon },
-    { label: 'Music', to: '/#', icon: MusicIcon },
+    { label: 'Music', to: '/music', icon: MusicIcon },
   ];
 
   return (
