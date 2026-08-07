@@ -18,7 +18,7 @@ export default function EmbedPlayer({ embedUrl, title = 'Player' }: Props) {
         src={embedUrl}
         title={title}
         allowFullScreen
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen *; gyroscope; picture-in-picture; web-share"
+        allow="accelerometer; clipboard-write; encrypted-media; fullscreen *; gyroscope; picture-in-picture; web-share"
         referrerPolicy="no-referrer-when-downgrade"
         className="absolute inset-0 w-full h-full border-none block"
       />
