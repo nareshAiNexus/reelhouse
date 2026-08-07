@@ -62,7 +62,7 @@ export default function Watch() {
       </div>
 
       {/* ── Movie info & More Like This ── */}
-      <div className="relative z-10 bg-void">
+      <div className="relative z-30 bg-void">
       {movie && status !== 'error' && (
         <div className="px-4 sm:px-8 lg:px-14 py-4 sm:py-8 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">

@@ -62,7 +62,7 @@ export default function WatchTv() {
       </div>
 
       {/* ── Episode info & Season List ── */}
-      <div className="relative z-10 bg-void">
+      <div className="relative z-30 bg-void">
         <div className="px-4 sm:px-8 lg:px-14 py-4 sm:py-6 max-w-7xl mx-auto flex flex-col gap-8 sm:gap-10">
           
           {/* Top Info Section */}
