@@ -76,7 +76,7 @@ export async function getNowPlaying(page = 1): Promise<Movie[]> {
 
 export async function searchMovies(query: string, page = 1): Promise<Movie[]> {
   if (!query.trim()) return [];
-  const { data } = await tmdb.get('/search/movie', { params: { query, page, include_adult: false } });
+  const { data } = await tmdb.get('/search/movie', { params: { query, page, include_adult: true } });
   return data.results.map(mapMovie);
 }
 
@@ -84,7 +84,7 @@ export async function searchMulti(query: string, pages = 2): Promise<Movie[]> {
   if (!query.trim()) return [];
   const promises = [];
   for (let p = 1; p <= pages; p++) {
-    promises.push(tmdb.get('/search/multi', { params: { query, page: p, include_adult: false } }));
+    promises.push(tmdb.get('/search/multi', { params: { query, page: p, include_adult: true } }));
   }
   const responses = await Promise.all(promises);
   const allResults = responses.flatMap((r) => r.data.results);
