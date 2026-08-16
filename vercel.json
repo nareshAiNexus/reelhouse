@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/__/firebase/:path*",
+      "destination": "/__/firebase/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
