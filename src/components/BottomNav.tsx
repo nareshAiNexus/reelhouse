@@ -8,7 +8,7 @@ export default function BottomNav() {
     { label: 'Series', to: '/tv-shows', icon: SeriesIcon },
     { label: 'Movies', to: '/', icon: MoviesIcon },
     { label: 'Search', to: '/search', icon: SearchNavIcon },
-    { label: 'Music', to: '/music', icon: MusicIcon },
+    { label: 'Profile', to: '/profile', icon: ProfileIcon },
   ];
 
   return (
@@ -78,12 +78,11 @@ function SearchNavIcon({ active }: { active: boolean }) {
   );
 }
 
-function MusicIcon({ active }: { active: boolean }) {
+function ProfileIcon({ active }: { active: boolean }) {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "1.5"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 18V5l12-2v13"></path>
-      <circle cx="6" cy="18" r="3"></circle>
-      <circle cx="18" cy="16" r="3"></circle>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? '2.5' : '1.5'} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }

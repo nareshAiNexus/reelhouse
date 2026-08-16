@@ -7,6 +7,7 @@ import {
 import type { Genre, Movie } from '../types/movie';
 import MovieRow from '../components/MovieRow';
 import Loader from '../components/Loader';
+import ContinueWatchingRow from '../components/ContinueWatchingRow';
 
 export default function Home() {
   const [trending,    setTrending]    = useState<Movie[]>([]);
@@ -281,6 +282,7 @@ export default function Home() {
           CONTENT ROWS — start right after hero
       ══════════════════════════════════════════ */}
       <div className="relative z-10 pb-20 mt-4 sm:-mt-[100px]">
+        <ContinueWatchingRow />
         <MovieRow title="Trending Now"       movies={trending}   showRanks />
         <MovieRow title="Goated (Top Rated)" movies={topRated}   showRanks />
         <MovieRow title="Now Playing"        movies={nowPlaying} />

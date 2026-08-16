@@ -1,0 +1,58 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read":  "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        "profile": {
+          ".validate": "newData.hasChildren(['displayName', 'avatarColor'])",
+          "displayName": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 50"
+          },
+          "age": {
+            ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 1 && newData.val() <= 120)"
+          },
+          "avatarColor": {
+            ".validate": "newData.isString() && newData.val().length <= 7"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": { ".validate": false }
+        },
+        "history": {
+          ".indexOn": ["watchedAt"],
+          "$entryId": {
+            ".validate": "newData.hasChildren(['tmdbId', 'mediaType', 'title', 'watchedAt'])",
+            "tmdbId":      { ".validate": "newData.isNumber()" },
+            "mediaType":   { ".validate": "newData.val() === 'movie' || newData.val() === 'tv'" },
+            "title":       { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200" },
+            "posterPath":  { ".validate": "newData.isString() || newData.val() === null" },
+            "watchedAt":   { ".validate": "newData.isNumber()" },
+            "season":      { ".validate": "!newData.exists() || newData.isNumber() || newData.val() === null" },
+            "episode":     { ".validate": "!newData.exists() || newData.isNumber() || newData.val() === null" },
+            "episodeName": { ".validate": "!newData.exists() || newData.isString() || newData.val() === null" },
+            "$other":      { ".validate": false }
+          }
+        },
+        "watchlist": {
+          "$itemKey": {
+            ".validate": "newData.hasChildren(['tmdbId', 'mediaType', 'title', 'addedAt'])",
+            "tmdbId":     { ".validate": "newData.isNumber()" },
+            "mediaType":  { ".validate": "newData.val() === 'movie' || newData.val() === 'tv'" },
+            "title":      { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 200" },
+            "posterPath": { ".validate": "newData.isString() || newData.val() === null" },
+            "addedAt":    { ".validate": "newData.isNumber()" },
+            "$other":     { ".validate": false }
+          }
+        },
+        "ratings": {
+          "$itemKey": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 5"
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

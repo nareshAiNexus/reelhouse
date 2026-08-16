@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { getTvShowDetails, getTvSeason, getRecommendedTv, stillUrl } from '../api/tmdb';
 import { getTvEmbedUrl } from '../api/streamApi';
@@ -7,6 +7,9 @@ import EmbedPlayer from '../components/EmbedPlayer';
 import TvRow from '../components/TvRow';
 import Loader from '../components/Loader';
 import ScrollableRow from '../components/ScrollableRow';
+import { useWatchTimer } from '../hooks/useWatchTimer';
+import { useAuth } from '../context/AuthContext';
+import { addToWatchlist, removeFromWatchlist, isInWatchlist } from '../firebase/db';
 
 export default function WatchTv() {
   const { tmdbId, season: seasonParam, episode: episodeParam } = useParams();
@@ -15,11 +18,14 @@ export default function WatchTv() {
   const season  = Number(seasonParam)  || 1;  
   const episode = Number(episodeParam) || 1;
 
+  const { user } = useAuth();
   const [show,        setShow]        = useState<TvShowDetail | null>(null);
   const [seasonData,  setSeasonData]  = useState<TvSeasonDetail | null>(null);
   const [curEpisode,  setCurEpisode]  = useState<TvEpisode | null>(null);
   const [similar,     setSimilar]     = useState<TvShow[]>([]);
   const [loading,     setLoading]     = useState(true);
+  const [inList,      setInList]      = useState(false);
+  const [listLoading, setListLoading] = useState(false);
 
   useEffect(() => {
     if (!tmdbId) return;
@@ -41,6 +47,49 @@ export default function WatchTv() {
 
     return () => { cancelled = true; };
   }, [tmdbId, season, episode]);
+
+  // Check watchlist status whenever user or show changes
+  useEffect(() => {
+    if (!user || !tmdbId) { setInList(false); return; }
+    isInWatchlist(user.uid, Number(tmdbId), 'tv')
+      .then(setInList)
+      .catch(() => setInList(false));
+  }, [user, tmdbId]);
+
+  // 5-minute watch history timer
+  useWatchTimer({
+    tmdbId:      Number(tmdbId ?? 0),
+    mediaType:   'tv',
+    title:       show?.name ?? '',
+    posterPath:  show?.posterPath ?? null,
+    season,
+    episode,
+    episodeName: curEpisode?.name ?? null,
+  });
+
+  const toggleWatchlist = useCallback(async () => {
+    if (!user || !show || !tmdbId) return;
+    setListLoading(true);
+    try {
+      if (inList) {
+        await removeFromWatchlist(user.uid, Number(tmdbId), 'tv');
+        setInList(false);
+      } else {
+        await addToWatchlist(user.uid, {
+          tmdbId:    Number(tmdbId),
+          mediaType: 'tv',
+          title:     show.name,
+          posterPath: show.posterPath,
+          addedAt:   Date.now(),
+        });
+        setInList(true);
+      }
+    } catch {
+      // non-critical
+    } finally {
+      setListLoading(false);
+    }
+  }, [user, show, tmdbId, inList]);
 
   if (loading) return <Loader label="Loading episode" />;
 
@@ -96,32 +145,47 @@ export default function WatchTv() {
               <span className="border border-white/20 text-white/50 text-[10px] sm:text-xs px-1 rounded-sm">HD</span>
             </div>
 
-            {/* Mobile Play / Download Buttons */}
+            {/* Play / My List Buttons */}
             <div className="flex flex-col gap-2.5 mb-4">
               <button className="flex items-center justify-center gap-2 bg-white text-black font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base hover:bg-white/90 transition-colors w-full">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M8 5v14l11-7z"/></svg>
                 Play
               </button>
-              <button className="flex items-center justify-center gap-2 bg-[#2b2b2b] text-white font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base hover:bg-[#333] transition-colors w-full">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Download
-              </button>
+              {user && (
+                <button
+                  onClick={toggleWatchlist}
+                  disabled={listLoading}
+                  id="rh-tv-watchlist-toggle"
+                  className={`flex items-center justify-center gap-2 font-bold py-2 sm:py-3 rounded-[4px] text-sm sm:text-base transition-colors w-full ${
+                    inList
+                      ? 'bg-white/15 text-white hover:bg-white/20 border border-white/20'
+                      : 'bg-[#2b2b2b] text-white hover:bg-[#333]'
+                  }`}
+                >
+                  {inList ? (
+                    <><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>In My List</>
+                  ) : (
+                    <><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>My List</>
+                  )}
+                </button>
+              )}
             </div>
 
             {curEpisode?.overview && (
               <p className="text-white/85 text-sm sm:text-base leading-relaxed mb-4">{curEpisode.overview}</p>
             )}
 
-            {/* Mobile Actions: My List, Rate, Share */}
+            {/* Share */}
             <div className="flex gap-8 mb-6 sm:mb-0">
-              {(['My List', 'Rate', 'Share'] as const).map((label, idx) => (
-                <button key={label} className="flex flex-col items-center gap-1.5 text-white/70 hover:text-white transition-colors">
-                  {idx === 0 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>}
-                  {idx === 1 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>}
-                  {idx === 2 && <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>}
-                  <span className="text-[10px] font-medium">{label}</span>
-                </button>
-              ))}
+              <button className="flex flex-col items-center gap-1.5 text-white/70 hover:text-white transition-colors">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span className="text-[10px] font-medium">Share</span>
+              </button>
+              {!user && (
+                <div className="ml-2 p-3 rounded border border-white/10 bg-white/5 text-xs text-white/50">
+                  <Link to="/auth" className="text-netflix hover:underline font-semibold">Sign in</Link> to save to My List
+                </div>
+              )}
             </div>
 
             {/* Prev / Next navigation */}

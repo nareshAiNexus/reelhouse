@@ -1,7 +1,8 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { searchMulti } from '../api/tmdb';
 import type { Movie } from '../types/movie';
+import { useAuth } from '../context/AuthContext';
 
 const NAV_LINKS = [
   { label: 'Home',          to: '/' },
@@ -12,13 +13,16 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
-  const [query, setQuery]         = useState('');
-  const [searchOpen, setSearch]   = useState(false);
-  const [scrolled, setScrolled]   = useState(false);
+  const [query, setQuery]           = useState('');
+  const [searchOpen, setSearch]     = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
   const [suggestions, setSuggestions] = useState<Movie[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const navigate  = useNavigate();
   const location  = useLocation();
+  const { user, profile, signOut } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
@@ -36,7 +40,12 @@ export default function Navbar() {
 
   // Close mobile menu when clicking outside
   useEffect(() => {
-    const closeMenu = () => setMobileMenuOpen(false);
+    const closeMenu = (e: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+      setMobileMenuOpen(false);
+    };
     document.addEventListener('click', closeMenu);
     return () => document.removeEventListener('click', closeMenu);
   }, []);
@@ -173,9 +182,65 @@ export default function Navbar() {
             <BellIcon />
           </button>
 
-          {/* Profile avatar */}
-          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity select-none overflow-hidden">
-             <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" alt="Profile" className="w-full h-full object-cover" />
+          {/* Profile avatar + dropdown */}
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              id="rh-profile-avatar"
+              onClick={(e) => { e.stopPropagation(); setProfileMenuOpen((p) => !p); }}
+              aria-label="Profile menu"
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded flex items-center justify-center text-white text-xs sm:text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity select-none overflow-hidden focus:outline-none"
+              style={{ backgroundColor: profile?.avatarColor ?? '#e50914' }}
+            >
+              {profile?.displayName
+                ? profile.displayName.charAt(0).toUpperCase()
+                : user
+                  ? (user.email?.charAt(0).toUpperCase() ?? 'U')
+                  : <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+              }
+            </button>
+
+            {/* Dropdown */}
+            {profileMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-48 bg-[#141414] border border-white/10 shadow-2xl shadow-black/80 rounded-sm overflow-hidden z-50"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {user ? (
+                  <>
+                    <div className="px-4 py-3 border-b border-white/10">
+                      <p className="text-white text-sm font-semibold truncate">{profile?.displayName ?? user.email}</p>
+                      {!user.emailVerified && user.providerData[0]?.providerId === 'password' && (
+                        <p className="text-yellow-500 text-[10px] mt-0.5">Email not verified</p>
+                      )}
+                    </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={async () => { await signOut(); setProfileMenuOpen(false); navigate('/'); }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    Sign In
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
